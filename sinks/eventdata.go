@@ -22,6 +22,7 @@ import (
 	"io"
 
 	"github.com/crewjam/rfc5424"
+	"github.com/spf13/viper"
 	"k8s.io/api/core/v1"
 )
 
@@ -31,6 +32,7 @@ type EventData struct {
 	Verb     string    `json:"verb"`
 	Event    *v1.Event `json:"event"`
 	OldEvent *v1.Event `json:"old_event,omitempty"`
+	CustomLabels map[string]string `json:"custom_labels,omitempty"`
 }
 
 // NewEventData constructs an EventData struct from an old and new event,
@@ -41,12 +43,14 @@ func NewEventData(eNew *v1.Event, eOld *v1.Event) EventData {
 		eData = EventData{
 			Verb:  "ADDED",
 			Event: eNew,
+			CustomLabels: viper.GetStringMapString("custom-labels"),
 		}
 	} else {
 		eData = EventData{
 			Verb:     "UPDATED",
 			Event:    eNew,
 			OldEvent: eOld,
+			CustomLabels: viper.GetStringMapString("custom-labels"),
 		}
 	}
 
@@ -77,6 +81,10 @@ func (e *EventData) WriteRFC5424(w io.Writer) (int64, error) {
 		AppName:   e.Event.Source.Component,
 		Message:   eJSONBytes,
 	}
-
+	if len(e.CustomLabels) > 0 {
+		for k, v := range e.CustomLabels {
+			msg.AddDatum("eventrouter@0001", k, v)
+		}
+	}
 	return msg.WriteTo(w)
 }

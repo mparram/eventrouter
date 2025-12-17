@@ -76,6 +76,7 @@ func loadConfig() kubernetes.Interface {
 	viper.SetDefault("resync-interval", time.Minute*30)
 	viper.SetDefault("enable-prometheus", true)
 	viper.SetDefault("enable-http-pprof", false)
+	viper.SetDefault("custom-labels", "")
 	if err = viper.ReadInConfig(); err != nil {
 		panic(err.Error())
 	}

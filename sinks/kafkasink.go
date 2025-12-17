@@ -48,6 +48,7 @@ func sinkFactory(brokers []string, async bool, retryMax int) (interface{}, error
 	config := sarama.NewConfig()
 	config.Producer.Retry.Max = retryMax
 	config.Producer.RequiredAcks = sarama.WaitForAll
+	config.Version = sarama.V2_8_0_0
 
 	if async {
 		return sarama.NewAsyncProducer(brokers, config)
